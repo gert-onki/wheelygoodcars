@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Auth;
+
 
 use Illuminate\Http\Request;
 use App\Models\Car;
@@ -9,44 +11,31 @@ class CarController extends Controller
 {
     public function create()
     {
-        return view('cars.create'); // Show the initial form
+        return view('cars.create');
     }
 
-    public function checkLicense(Request $request)
-    {
-        $request->validate([
-            'license_plate' => 'required|string|unique:cars,license_plate',
-        ]);
 
-        // Simulate retrieving car data based on the license plate
-        $carData = [
-            'brand' => 'Default Brand',
-            'model' => 'Default Model',
-        ];
+    // Store method in CarController
 
-        return response()->json($carData); // Return dummy data for now
-    }
-
+    
     public function store(Request $request)
     {
-        $request->validate([
-            'license_plate' => 'required|string|unique:cars,license_plate',
-            'brand' => 'required|string',
-            'model' => 'required|string',
+        // Validate form data
+        $validatedData = $request->validate([
+            'license_plate' => 'required|string|max:255',
+            'brand' => 'required|string|max:255',
+            'model' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'mileage' => 'required|integer|min:0',
         ]);
-
-        Car::create([
-            'user_id' => auth()->id(),
-            'license_plate' => $request->license_plate,
-            'brand' => $request->brand,
-            'model' => $request->model,
-            'price' => $request->price,
-            'mileage' => $request->mileage,
-        ]);
-
-        return redirect()->route('cars.create')->with('success', 'Car added successfully!');
+    
+        // Add the logged-in user's ID
+        $validatedData['user_id'] = Auth::id();
+    
+        // Create the car entry with validated data
+        Car::create($validatedData);
+    
+        return redirect()->route('cars.index')->with('success', 'Car created successfully!');
     }
+    
 }
 

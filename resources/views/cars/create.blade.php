@@ -1,60 +1,81 @@
 @extends('layouts.app')
 
 @section('content')
-    <div>
-        <h1>Add a Car for Sale</h1>
+<div class="container">
+    <h1>List Your Car for Sale</h1>
 
-        <!-- Step 1: License Plate -->
-        <form id="license-form">
-            @csrf
-            <label for="license_plate">License Plate:</label>
-            <input type="text" id="license_plate" name="license_plate" required>
-            <button type="button" id="check-license">Next</button>
-        </form>
+    <!-- Success Message -->
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
-        <!-- Step 2: Car Details -->
-        <form id="car-details-form" action="{{ route('cars.store') }}" method="POST" style="display: none;">
-            @csrf
-            <input type="hidden" name="license_plate" id="license_plate_hidden">
-            <label for="brand">Brand:</label>
-            <input type="text" id="brand" name="brand" required>
-            <label for="model">Model:</label>
-            <input type="text" id="model" name="model" required>
-            <label for="price">Price:</label>
-            <input type="number" id="price" name="price" required>
-            <label for="mileage">Mileage:</label>
-            <input type="number" id="mileage" name="mileage" required>
-            <button type="submit">Add Car</button>
-        </form>
-    </div>
+    <!-- Form -->
+    <form method="POST" action="{{ route('cars.store') }}">
+        @csrf
+
+        <div class="mb-3">
+            <label for="license_plate" class="form-label">License Plate</label>
+            <input 
+                type="text" 
+                id="license_plate" 
+                name="license_plate" 
+                class="form-control @error('license_plate') is-invalid @enderror" 
+                value="{{ old('license_plate') }}"
+                required
+            >
+            @error('license_plate')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="brand" class="form-label">Brand</label>
+            <input 
+                type="text" 
+                id="brand" 
+                name="brand" 
+                class="form-control @error('brand') is-invalid @enderror" 
+                value="{{ old('brand') }}"
+                required
+            >
+            @error('brand')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="model" class="form-label">Model</label>
+            <input 
+                type="text" 
+                id="model" 
+                name="model" 
+                class="form-control @error('model') is-invalid @enderror" 
+                value="{{ old('model') }}"
+                required
+            >
+            @error('model')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input 
+                type="number" 
+                id="price" 
+                name="price" 
+                class="form-control @error('price') is-invalid @enderror" 
+                value="{{ old('price') }}"
+                required
+            >
+            @error('price')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+</div>
 @endsection
-
-@push('scripts')
-<script>
-    document.getElementById('check-license').addEventListener('click', async function() {
-        const licensePlate = document.getElementById('license_plate').value;
-
-        const response = await fetch("{{ route('cars.checkLicense') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            },
-            body: JSON.stringify({ license_plate: licensePlate }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('brand').value = data.brand;
-            document.getElementById('model').value = data.model;
-
-            document.getElementById('license_plate_hidden').value = licensePlate;
-
-            document.getElementById('license-form').style.display = 'none';
-            document.getElementById('car-details-form').style.display = 'block';
-        } else {
-            alert('License plate is invalid or already exists.');
-        }
-    });
-</script>
-@endpush
